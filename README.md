@@ -1,6 +1,9 @@
 # SmartSensor-Ethereum-Smart-Contract
 
-This project was built usong the Truffle framework.
+This is a Rochester Institute of Technology, DEpartment of Computer Science Capstone Project for the degree requirements of Masters in Computer Science. This project was built using the Truffle framework.
+
+The objective of this project is to develop an IoT solution for S2aaS-Sensor as a Service model on the Ethereum blockchain using smart contracts.
+
 
 Files:
 
