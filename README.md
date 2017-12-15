@@ -66,4 +66,8 @@ $ truffle(develop)> SmartSensor.deployed().then(function(instance){return instan
 
 '-4 C'
 
+10. In a new terminal window, within the project directory, run the following commands to launch the web app user interface.
+
+>npm run dev
+
 
