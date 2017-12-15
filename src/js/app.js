@@ -1,43 +1,21 @@
 App = {
   web3Provider: null,
   contracts: {},
+  guage: null,
 
   init: function() {
-    // Load pets.
-    // $.getJSON('../pets.json', function(data) {
-    //   var petsRow = $('#petsRow');
-    //   var petTemplate = $('#petTemplate');
 
-    //   for (i = 0; i < data.length; i ++) {
-    //     petTemplate.find('.panel-title').text(data[i].name);
-    //     petTemplate.find('img').attr('src', data[i].picture);
-    //     petTemplate.find('.pet-breed').text(data[i].breed);
-    //     petTemplate.find('.pet-age').text(data[i].age);
-    //     petTemplate.find('.pet-location').text(data[i].location);
-    //     petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
 
-    //     petsRow.append(petTemplate.html());
-    //   }
-    // });
-
-  //   var g = new JustGage({
-  //   id: "gauge2",
-  //   value: 67,
-  //   min: 0,
-  //   max: 100,
-  //   title: "Visitors"
-  // });
-
-  var sensorname = "Sensor1";
+  var sensorname = "Rochester";
 
 
     var g1 = new JustGage({
     id: "g1",
-    value: 88,
-    min: 0,
-    max: 100,
+    value: -90,
+    min: -89,
+    max: 60,
     title: sensorname,
-    label: "temperature",
+    label: "Temperature in C",
     donut: true,
     gaugeWidthScale: 0.6,
     counter: true,
@@ -54,13 +32,12 @@ App = {
           stroke_linecap: 'round'
         }    
   });
+    App.guage = g1;
 
-console.log(g1.config.value);
-
-  // g1.refresh(55,100);
+console.log(App.guage.config.value);
 
 
-  console.log(g1.config.value);
+  console.log(App.guage.config.value);
 
 
     return App.initWeb3();
@@ -69,85 +46,61 @@ console.log(g1.config.value);
   initWeb3: function() {
 
 
-    
-    // Is there is an injected web3 instance?
-if (typeof web3 !== 'undefined') {
-  App.web3Provider = web3.currentProvider;
-} else {
-  // If no injected web3 instance is detected, fallback to the TestRPC
-  App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
-}
+App.web3Provider = new Web3.providers.HttpProvider('http://localhost:9545');
 web3 = new Web3(App.web3Provider);
 
     return App.initContract();
   },
 
   initContract: function() {
-    
-    $.getJSON('Adoption.json', function(data) {
-  // Get the necessary contract artifact file and instantiate it with truffle-contract
-  var AdoptionArtifact = data;
-  App.contracts.Adoption = TruffleContract(AdoptionArtifact);
+  
 
-  // Set the provider for our contract
-  App.contracts.Adoption.setProvider(App.web3Provider);
+  $.getJSON('SmartSensor.json',function(data) {
 
-  // Use our contract to retrieve and mark the adopted pets
-  return App.markAdopted();
+    var smartsensorartifact = data;
+   App.contracts.SmartSensor = TruffleContract(smartsensorartifact);
+
+  App.contracts.SmartSensor.setProvider(App.web3Provider);
+
 });
 
     return App.bindEvents();
   },
 
   bindEvents: function() {
-    $(document).on('click', '.btn-adopt', App.handleAdopt);
+    $(document).on('click', '.btn-adopt', App.handleClick);
+
   },
 
-  markAdopted: function(adopters, account) {
-    
-    var adoptionInstance;
+  handleClick: function(event) {
+    event.preventDefault();
 
-App.contracts.Adoption.deployed().then(function(instance) {
-  adoptionInstance = instance;
 
-  return adoptionInstance.getAdopters.call();
-}).then(function(adopters) {
-  for (i = 0; i < adopters.length; i++) {
-    if (adopters[i] !== '0x0000000000000000000000000000000000000000') {
-      $('.panel-pet').eq(i).find('button').text('Success').attr('disabled', true);
-    }
-  }
-}).catch(function(err) {
+
+  App.contracts.SmartSensor.deployed().then(function(instance) {
+
+smartsensorInstance = instance;
+
+return smartsensorInstance.getData.call(1);
+}).then(function(readings) {
+  console.log(readings);
+
+  console.log(readings.length);
+
+  var reads = readings.substring(0,readings.length-2);
+
+  console.log(reads);
+
+  var nums = parseInt(reads);
+
+  console.log(nums);
+
+  App.guage.refresh(nums,100);
+
+}).catch(function(err){
   console.log(err.message);
 });
 
-  },
-
-  handleAdopt: function(event) {
-    event.preventDefault();
-
-    var petId = parseInt($(event.target).data('id'));
-
-    var adoptionInstance;
-
-web3.eth.getAccounts(function(error, accounts) {
-  if (error) {
-    console.log(error);
-  }
-
-  var account = accounts[0];
-
-  App.contracts.Adoption.deployed().then(function(instance) {
-    adoptionInstance = instance;
-
-    // Execute adopt as a transaction by sending account
-    return adoptionInstance.adopt(petId, {from: account});
-  }).then(function(result) {
-    return App.markAdopted();
-  }).catch(function(err) {
-    console.log(err.message);
-  });
-});
   }
 
 };
