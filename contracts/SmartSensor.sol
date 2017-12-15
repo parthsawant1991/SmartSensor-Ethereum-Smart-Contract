@@ -15,6 +15,7 @@ string public reading;
 	
 	function getData(uint sensorId) public returns (string) {
 	require(sensorId>=0); 
+	update();
 	return reading; //sensor id will be used for associating reading to individual sensors
 	}
 
